@@ -1,0 +1,26 @@
+[package]
+name = "badgemagic"
+version = "0.1.0"
+authors = ["olel <olel@olel.de>"]
+categories = ["embedded", "no-std"]
+readme = "README.md"
+
+
+[dependencies]
+
+ch58x-hal = { git = "https://github.com/ch32-rs/ch58x-hal", version = "0.0.2", branch = "main" }
+
+critical-section = "1.1.2"
+qingke = { version = "0.1.6", features = ["critical-section-impl"] }
+
+ch58x = { version = "0.2.0", features = ["ch58x"] }
+ch32v-rt = "0.0.2"
+
+fugit = "0.3.7"
+nb = "1.1.0"
+embedded-hal-02 = { package = "embedded-hal", version = "0.2.7", features = [
+    "unproven",
+] }
+embedded-hal-1 = { version = "=1.0.0-rc.2", package = "embedded-hal" }
+embedded-hal-nb = "1.0.0-rc.1"
+embedded-hal-async = "1.0.0-rc.1"
