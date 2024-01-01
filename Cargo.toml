@@ -18,9 +18,7 @@ ch32v-rt = "0.0.2"
 
 fugit = "0.3.7"
 nb = "1.1.0"
-embedded-hal-02 = { package = "embedded-hal", version = "0.2.7", features = [
-    "unproven",
-] }
-embedded-hal-1 = { version = "=1.0.0-rc.2", package = "embedded-hal" }
+
+embedded-hal = { version = "=1.0.0-rc.2", package = "embedded-hal" }
 embedded-hal-nb = "1.0.0-rc.1"
 embedded-hal-async = "1.0.0-rc.1"
