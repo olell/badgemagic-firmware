@@ -2,6 +2,9 @@
 
 This repository contains an attempt to alternative FOSS firmware for the badgemagic led sign.
 
+![pcb image top](hardware/pcb_top_stitched.png)
+![pcb image bottom](hardware/pcb_bottom_stiched.png)
+
 ## Build
 
 ### Toolchain Setup
