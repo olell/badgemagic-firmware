@@ -2,17 +2,31 @@
 
 This repository contains an attempt to alternative FOSS firmware for the badgemagic led sign.
 
+⚠️ Note that the project is still quite incomplete and at an early stage. Flashing this code onto your badge will make it almost useless. It is not possible to revert to the original firmware! ⚠️
+
 ![pcb image top](hardware/pcb_top_stitched.png)
 ![pcb image bottom](hardware/pcb_bottom_stiched.png)
 
-## Build
+## Features / TODO
+
+- [x] Build and flash firmware
+- [ ] Reverse engineer schematic
+- [ ] Reading side buttons
+- [ ] Controlling LED matrix
+- [ ] Battery voltage reading
+- [ ] USB (?)
+- [ ] Bluetooth LE communication
+
+## Hardware
+
+For documentation / reverse engineering of the hardware (mostly based on the PCB marked with `B1144_221028`) see the hardware directory.
+
+## Build / Flash
 
 ### Toolchain Setup
 
 Install rust via rustup, if you have an existing rust installation, uninstall it. Then run
 `rustup target add riscv32imac-unknown-none-elf`
-
-## Flash
 
 ### WCHISP Setup
 
