@@ -2,7 +2,9 @@
 
 This repository contains an attempt to alternative FOSS firmware for the badgemagic led sign.
 
-⚠️ Note that the project is still quite incomplete and at an early stage. Flashing this code onto your badge will make it almost useless. It is not possible to revert to the original firmware! ⚠️
+⚠️ \
+**Note that the project is still quite incomplete and at an early stage. Flashing this code onto your badge will make it almost useless. It is not possible to revert to the original firmware!**\
+⚠️
 
 ![pcb image top](hardware/pcb_top_stitched.png)
 ![pcb image bottom](hardware/pcb_bottom_stiched.png)
