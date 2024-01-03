@@ -12,11 +12,11 @@ This repository contains an attempt to alternative FOSS firmware for the badgema
 ## Features / TODO
 
 - [x] Build and flash firmware
+- [x] Controlling LED matrix
 - [ ] Reverse engineer schematic
 - [ ] Reading side buttons
-- [ ] Controlling LED matrix
-- [ ] Battery voltage reading
 - [ ] USB (?)
+- [ ] Battery voltage reading
 - [ ] Bluetooth LE communication
 
 ## Hardware
@@ -76,7 +76,7 @@ This will overwrite your badges firmware (irreversable!!) To flash the new firmw
 Then execute the following command:
 
 ```
-cargo run
+cargo run --release
 ```
 
 # LICENSE

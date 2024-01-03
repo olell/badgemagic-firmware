@@ -10,7 +10,7 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 extern crate ch58x_hal as hal;
-use hal::gpio::{AnyPin, Flex, Input, Level, Output, OutputDrive, Pin, Pull};
+use hal::gpio::{Flex, Input, OutputDrive, Pull};
 
 extern crate embedded_hal;
 
@@ -24,15 +24,80 @@ fn main() -> ! {
     let p = hal::init(config);
 
     // switch
-    let mut PB22 = Input::new(p.PB22, Pull::Up);
+    let mut button = Input::new(p.PB22, Pull::Up);
 
-    //&mut Output::new(p.PA8, Level::Low, OutputDrive::_5mA).degrade(),
-    //&mut Output::new(p.PA9, Level::Low, OutputDrive::_5mA).degrade(),
-    //&mut Output::new(p.PB16, Level::Low, OutputDrive::_5mA).degrade(),
-
-    // Probably led pins
+    let pixels: [[bool; 44]; 11] = [
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+        [
+            false, true, false, false, true, false, false, true, false, false, true, false, false,
+            false, false, true, false, false, true, false, false, true, false, false, true, false,
+            false, false, false, true, false, false, true, false, false, true, false, false, false,
+            false, true, false, false, true,
+        ],
+    ];
 
     let pins = [
+        // not a row
+        &mut Flex::new(p.PB19).degrade(),
         // xx
         &mut Flex::new(p.PB20).degrade(),
         &mut Flex::new(p.PB21).degrade(),
@@ -56,33 +121,35 @@ fn main() -> ! {
         &mut Flex::new(p.PB0).degrade(),
         &mut Flex::new(p.PB18).degrade(),
         &mut Flex::new(p.PA15).degrade(),
-        // xx
-        &mut Flex::new(p.PB19).degrade(),
-        &mut Flex::new(p.PA1).degrade(),
     ];
 
-    for i in 0..pins.len() {
-        pins[i].set_as_input(Pull::None);
-    }
+    let mut col = 1;
+    let mut x = 0;
+    let mut y = 0;
+
+    let mut realx = 0;
 
     loop {
-        for i in 0..pins.len() {
-            for j in 0..pins.len() {
-                if i != j {
-                    pins[i].set_as_output(OUTPUT_DRIVE);
-                    pins[j].set_as_output(OUTPUT_DRIVE);
-                    //hal::delay_us(10);
-                    pins[i].set_low();
-                    pins[j].set_high();
-                    //hal::delay_ms(5);
-                    pins[i].set_high();
-                    pins[j].set_low();
-                    //hal::delay_ms(5);
-                    pins[i].set_as_input(Pull::None);
-                    pins[j].set_as_input(Pull::None);
-                    //hal::delay_us(10);
+        x = (col - 1) * 2;
+        pins[col].set_as_output(OUTPUT_DRIVE);
+        pins[col].set_high();
+        y = 0;
+        for px in 0..pins.len() {
+            if px != col {
+                realx = x + (y % 2);
+                if (realx % 3) == 0 && (y % 3) == 0 {
+                    pins[px].set_as_output(OUTPUT_DRIVE);
+                    pins[px].set_low();
+                    pins[px].set_as_input(Pull::None);
                 }
+                y += 1;
             }
+        }
+        pins[col].set_as_input(Pull::None);
+
+        col = col + 1;
+        if col >= pins.len() {
+            col = 1;
         }
     }
 }
