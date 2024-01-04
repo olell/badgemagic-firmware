@@ -23,8 +23,7 @@ def print_rust_code(bool_2d_array):
     print("let mut pixels = [")
 
     for row in bool_2d_array:
-        print("    [", end="")
-        print(", ".join([str(cell).lower() for cell in row]), end="],\n")
+        print(", ".join([str(cell).lower() for cell in row]), end=",\n")
 
     print("];")
 
