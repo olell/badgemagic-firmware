@@ -1,40 +1,28 @@
 from PIL import Image
 import sys
 
+if len(sys.argv) != 2:
+    print("Usage: python convert.py <image_path>")
+    sys.exit(1)
 
-def image_to_bool_array(image_path):
-    try:
-        img = Image.open(image_path)
-        img = img.convert("L")
-        pixel_data = list(img.getdata())
-        width, height = img.size
-        pixel_2d_array = [
-            pixel_data[i : i + width] for i in range(0, width * height, width)
-        ]
-        bool_2d_array = [[pixel == 255 for pixel in row] for row in pixel_2d_array]
-        return bool_2d_array
+image_path = sys.argv[1]
 
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+img = Image.open(image_path)
+img_gray = img.convert("L")
+pixels = []
 
+width, height = img_gray.size
+for y in range(0, height):
+    for x in range(0, width):
+        pixel = img_gray.getpixel((x, y))
+        pixels.append(1 if pixel > 128 else 0)
 
-def print_rust_code(bool_2d_array):
-    print("let mut pixels = [")
+while len(pixels) % 8 != 0:
+    pixels.append(0)
 
-    for row in bool_2d_array:
-        print(", ".join([str(1 if cell else 0) for cell in row]), end=",\n")
+bin_pixels = []
 
-    print("];")
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python convert.py <image_path>")
-        sys.exit(1)
-
-    image_path = sys.argv[1]
-    result = image_to_bool_array(image_path)
-
-    if result is not None:
-        print_rust_code(result)
+for i in range(0, len(pixels), 8):
+    b = "".join(map(str, pixels[i : i + 8]))
+    bin_pixels.append(int(b[::-1], 2))
+print("let pixels = {};".format(str(bin_pixels)))

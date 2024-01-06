@@ -89,6 +89,10 @@ pub struct MatrixController {
     reg_out: u64,
     reg_drv: u64,
 
+    reg_dir_a: u64,
+    reg_out_a: u64,
+    reg_drv_a: u64,
+
     // to restore the state
     clean_reg_dir: u64,
     clean_reg_out: u64,
@@ -101,12 +105,16 @@ pub struct MatrixController {
     pin_idx: usize,
     col_idx: usize,
     pix_idx: usize,
+    bit_idx: usize,
 
     // if true, the display doesn't perform any action
     is_locked: bool,
 
-    // pixel buffer idx = (y * 44 + x)
-    pub pixels: [u8; 484],
+    // if true i/o s are set to 20mA mode
+    pub is_bright: bool,
+
+    // pixel buffer bit idx = (y * 44 + x)
+    pub pixels: [u8; 61],
 }
 
 impl MatrixController {
@@ -115,6 +123,9 @@ impl MatrixController {
             reg_dir: 0,
             reg_out: 0,
             reg_drv: 0,
+            reg_dir_a: 0,
+            reg_out_a: 0,
+            reg_drv_a: 0,
             clean_reg_dir: 0,
             clean_reg_out: 0,
             clean_reg_drv: 0,
@@ -122,8 +133,10 @@ impl MatrixController {
             pin_idx: 0,
             col_idx: 0,
             pix_idx: 0,
+            bit_idx: 0,
             is_locked: false,
-            pixels: [0; 484],
+            is_bright: true,
+            pixels: [0; 61],
         }
     }
 
@@ -143,11 +156,11 @@ impl MatrixController {
         }
     }
 
-    pub fn copy_pixels(&mut self, new_pixels: [u8; 484]) {
+    pub fn copy_pixels(&mut self, new_pixels: [u8; 61]) {
         self.lock();
 
         self.pix_idx = 0;
-        while self.pix_idx < 484 {
+        while self.pix_idx < 61 {
             self.pixels[self.pix_idx] = new_pixels[self.pix_idx];
             self.pix_idx += 1;
         }
@@ -159,8 +172,16 @@ impl MatrixController {
         self.unlock();
     }
 
+    pub fn set_brightness(&mut self, state: bool) {
+        self.is_bright = state;
+    }
+
     pub fn lock(&mut self) {
         self.is_locked = true;
+
+        self.col_idx = 0;
+        self.pix_idx = 0;
+        self.pin_idx = 0;
     }
 
     pub fn unlock(&mut self) {
@@ -182,7 +203,9 @@ impl MatrixController {
         self.pin_buffer = REGISTER_MAP[self.col_idx + 1]; // first pin in register_map isn't an column anode
         self.reg_dir |= self.pin_buffer; // set as output
         self.reg_out |= self.pin_buffer; // set high level
-        self.reg_drv |= self.pin_buffer; // set as 20mA output
+        if self.is_bright {
+            self.reg_drv |= self.pin_buffer; // set as 20mA output
+        }
 
         self.pin_idx = 0;
         self.pix_idx = 0;
@@ -192,15 +215,19 @@ impl MatrixController {
                 self.pin_idx += 1;
             }
 
-            // check if the pixel is on
-            if self.pixels[((self.pix_idx >> 1) * 44) + ((self.col_idx << 1) | (self.pix_idx & 1))]
-                > 0
-            // test if "as bool" is faster
-            {
+            // calculate which bit represents the pixel
+            // y   = row / 2
+            // x   = (col * 2) + (row % 2)
+            // bit = (y * 44 + x)
+            self.bit_idx = ((self.pix_idx >> 1) * 44) + ((self.col_idx << 1) | (self.pix_idx & 1));
+            // checking bit in array self.pixels at self.bit_idx
+            if (self.pixels[self.bit_idx >> 3] & (1 << (self.bit_idx & 7))) != 0 {
                 self.pin_buffer = REGISTER_MAP[self.pin_idx];
                 self.reg_dir |= self.pin_buffer; // set as output
-                self.reg_drv |= self.pin_buffer; // set as 20mA output
-                                                 // implying that self.reg_out at the place is 0
+                if self.is_bright {
+                    self.reg_drv |= self.pin_buffer; // set as 20mA output
+                }
+                // implying that self.reg_out at the place is 0
             }
 
             self.pin_idx += 1;
@@ -209,12 +236,15 @@ impl MatrixController {
 
         // write freshly crafted registers
         unsafe {
-            intrinsics::volatile_store(REGISTER_R32_PB_DIR, self.reg_dir & 0xffffffff);
-            intrinsics::volatile_store(REGISTER_R32_PA_DIR, self.reg_dir >> 32);
-            intrinsics::volatile_store(REGISTER_R32_PB_DRV, self.reg_drv & 0xffffffff);
-            intrinsics::volatile_store(REGISTER_R32_PA_DRV, self.reg_drv >> 32);
-            intrinsics::volatile_store(REGISTER_R32_PB_OUT, self.reg_out & 0xffffffff);
-            intrinsics::volatile_store(REGISTER_R32_PA_OUT, self.reg_out >> 32);
+            self.reg_dir_a = self.reg_dir >> 32;
+            self.reg_out_a = self.reg_out >> 32;
+            self.reg_drv_a = self.reg_drv >> 32;
+            intrinsics::unaligned_volatile_store(REGISTER_R32_PA_DIR, self.reg_dir_a);
+            intrinsics::unaligned_volatile_store(REGISTER_R32_PB_DIR, self.reg_dir);
+            intrinsics::unaligned_volatile_store(REGISTER_R32_PA_OUT, self.reg_out_a);
+            intrinsics::unaligned_volatile_store(REGISTER_R32_PB_OUT, self.reg_out);
+            intrinsics::unaligned_volatile_store(REGISTER_R32_PA_DRV, self.reg_drv_a);
+            intrinsics::unaligned_volatile_store(REGISTER_R32_PB_DRV, self.reg_drv);
         }
 
         // increase column index, wrap around at 22
