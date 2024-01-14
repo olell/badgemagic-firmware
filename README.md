@@ -60,9 +60,40 @@ Now you can run `wchisp info` to get information about the chip, it should look 
 [INFO] Current config registers: ...
 ```
 
+### Setup compiler / toolchain
+
+First of all install ninja and cmake
+
+```
+brew install cmake ninja
+```
+
+Then install the riscv-none-elf-gcc-xpack. Download and extract the newest release for your platform from this link: https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases
+
+Then add the `bin/` folder to your $PATH variable
+
+```
+# fish shell
+fish_add_path ABSOLUTE_PATH_TO_THE_FOLDER
+
+# bash shell
+# add the following line to ~/.bash_profile
+PATH="$PATH:ABSOLUTE_PATH_TO_THE_FOLDER"
+```
+
 ### Run / Flash Firmware
 
-TODO for new toolchain
+Build using
+
+```
+./build.sh
+```
+
+Build & Flash using
+
+```
+./build.sh --flash
+```
 
 # LICENSE
 
