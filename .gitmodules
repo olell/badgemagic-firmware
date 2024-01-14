@@ -1,0 +1,3 @@
+[submodule "CH58X-CMake"]
+	path = CH58X-CMake
+	url = https://github.com/ohmytime/CH58X-CMake
