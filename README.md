@@ -11,8 +11,8 @@ This repository contains an attempt to alternative FOSS firmware for the badgema
 
 ## Features / TODO
 
-- [x] Build and flash firmware
-- [x] Controlling LED matrix
+- [ ] Build and flash firmware
+- [ ] Controlling LED matrix
 - [ ] Reverse engineer schematic
 - [ ] Reading side buttons
 - [ ] USB (?)
@@ -24,11 +24,6 @@ This repository contains an attempt to alternative FOSS firmware for the badgema
 For documentation / reverse engineering of the hardware (mostly based on the PCB marked with `B1144_221028`) see the hardware directory.
 
 ## Build / Flash
-
-### Toolchain Setup
-
-Install rust via rustup, if you have an existing rust installation, uninstall it. Then run
-`rustup target add riscv32imac-unknown-none-elf`
 
 ### WCHISP Setup
 
@@ -67,17 +62,7 @@ Now you can run `wchisp info` to get information about the chip, it should look 
 
 ### Run / Flash Firmware
 
-This will overwrite your badges firmware (irreversable!!) To flash the new firmware, first bring your badge into download mode:
-
-1. Disconnect Battery
-2. Press the two side-buttons
-3. Attach an USB wire
-
-Then execute the following command:
-
-```
-cargo run --release
-```
+TODO for new toolchain
 
 # LICENSE
 
