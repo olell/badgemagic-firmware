@@ -18,5 +18,5 @@ fi
 
 # Check if "--flash" flag is present
 if [[ "$*" == *"--flash"* ]]; then
-    wchisp flash ./debug/ch58x-ninja.bin
+    wchisp flash ./release/ch58x-ninja.bin
 fi

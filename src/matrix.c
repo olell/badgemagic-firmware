@@ -145,9 +145,11 @@ void matrixInit() {
  */
 void setBrightness(uint8_t v) {
     if (v > 0) {
-        isBright = 0xffffffff;
+        R32_PA_PD_DRV |= ~REGISTER_MASK_PA;
+        R32_PB_PD_DRV |= ~REGISTER_MASK_PB;
     } else {
-        isBright = 0x00;
+        R32_PA_PD_DRV &= REGISTER_MASK_PA;
+        R32_PB_PD_DRV &= REGISTER_MASK_PB;
     }
 }
 
@@ -173,8 +175,6 @@ uint8_t *getPixelBuffer() { return pixelBuffer; }
 void matrixDisplay() {
     // if (isLocked) return;
 
-    CLEAN_R32_PA_PD_DRV = R32_PA_PD_DRV & REGISTER_MASK_PA;
-    CLEAN_R32_PB_PD_DRV = R32_PB_PD_DRV & REGISTER_MASK_PB;
     CLEAN_R32_PA_OUT = R32_PA_OUT & REGISTER_MASK_PA;
     CLEAN_R32_PB_OUT = R32_PB_OUT & REGISTER_MASK_PB;
     CLEAN_R32_PA_DIR = R32_PA_DIR & REGISTER_MASK_PA;
@@ -205,8 +205,6 @@ void matrixDisplay() {
             pixelIndex++;
         }
 
-        R32_PA_PD_DRV = CLEAN_R32_PA_PD_DRV | (dirReg >> 32);
-        R32_PB_PD_DRV = CLEAN_R32_PB_PD_DRV | dirReg;
         R32_PA_OUT = CLEAN_R32_PA_OUT | (outReg >> 32);
         R32_PB_OUT = CLEAN_R32_PB_OUT | outReg;
         R32_PA_DIR = CLEAN_R32_PA_DIR | (dirReg >> 32);

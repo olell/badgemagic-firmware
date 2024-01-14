@@ -41,18 +41,18 @@ add_compile_options(-march=rv32imac_zicsr -mabi=ilp32
 add_compile_options(-fmessage-length=0 -fsigned-char -ffunction-sections
                     -fdata-sections -fno-common)
 
-set(CMAKE_BUILD_TYPE "Debug")
-# SET(CMAKE_BUILD_TYPE "Release")
+#set(CMAKE_BUILD_TYPE "Debug")
+SET(CMAKE_BUILD_TYPE "Release")
 
 if(CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
-  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -O0")
-  set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG -O0 -g")
-  set(CMAKE_ASM_FLAGS_DEBUG "-DDEBUG -O0 -g")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -O1")
+  set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG -O1 -g")
+  set(CMAKE_ASM_FLAGS_DEBUG "-DDEBUG -O1 -g")
   message("Debug mode:${CMAKE_C_FLAGS_DEBUG}")
 elseif(CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall -O2")
-  set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Os") # -flto
-  set(CMAKE_ASM_FLAGS_RELEASE "-DNDEBUG -Os")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall -O1")
+  set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O1") # -flto
+  set(CMAKE_ASM_FLAGS_RELEASE "-DNDEBUG -O1")
   message("Release mode:${CMAKE_C_FLAGS_RELEASE}")
 else()
   message("else:${CMAKE_BUILD_TYPE}")
@@ -69,7 +69,7 @@ include_directories(
   src/inc
 )
 
-add_definitions(-DDEBUG=1)
+#add_definitions(-DDEBUG=1)
 
 file(
   GLOB_RECURSE
