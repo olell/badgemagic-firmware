@@ -75,13 +75,20 @@ uint32_t byteIndex;
 uint64_t pinBuffer;
 
 // some flags
-uint64_t isBright;
+uint32_t isBright;
 uint8_t isLocked;
 
 // newly crafted value, value when matrixInit() was called
-uint64_t drvReg, cleanDrvReg;
-uint64_t outReg, cleanOutReg;
-uint64_t dirReg, cleanDirReg;
+uint64_t pinsUsed;
+uint64_t outReg;
+uint64_t dirReg;
+
+uint32_t CLEAN_R32_PA_PD_DRV;
+uint32_t CLEAN_R32_PB_PD_DRV;
+uint32_t CLEAN_R32_PA_OUT;
+uint32_t CLEAN_R32_PB_OUT;
+uint32_t CLEAN_R32_PA_DIR;
+uint32_t CLEAN_R32_PB_DIR;
 
 const uint64_t REGISTER_MAP[23] = {
     // Port A                             Port B
@@ -111,7 +118,8 @@ const uint64_t REGISTER_MAP[23] = {
     0b0000000000000000100000000000000000000000000000000000000000000000,  // PA15
 };
 
-const uint64_t REGISTER_MASK = 0xffff63efff430c40;
+const uint64_t REGISTER_MASK_PA = 0xffff63ef;
+const uint64_t REGISTER_MASK_PB = 0xff430c40;  // ~(SUM(REGISTER_MAP))
 
 /**
  * Initialize the LED matrix driver
@@ -120,21 +128,6 @@ void matrixInit() {
     // allocate memory for pixel buffer
     pixelBuffer = (uint8_t *)malloc(sizeof(uint8_t) * PIX_BUFFER_SIZE);
     memset(pixelBuffer, 0, sizeof(uint8_t) * PIX_BUFFER_SIZE);
-
-    // Assign register pointers their addresses
-
-    // read clean register values
-    cleanDirReg = R32_PB_DIR;
-    cleanDirReg |= R32_PA_DIR;
-    cleanDirReg &= REGISTER_MASK;
-
-    cleanOutReg = R32_PB_OUT;
-    cleanOutReg |= R32_PA_OUT;
-    cleanOutReg &= REGISTER_MASK;
-
-    cleanDrvReg = R32_PB_PD_DRV;
-    cleanDrvReg |= R32_PA_PD_DRV;
-    cleanDrvReg &= REGISTER_MASK;
 
     // init indicies, and other vars
     pixelIndex = 0;
@@ -152,7 +145,7 @@ void matrixInit() {
  */
 void setBrightness(uint8_t v) {
     if (v > 0) {
-        isBright = 0xffffffffffffffff;
+        isBright = 0xffffffff;
     } else {
         isBright = 0x00;
     }
@@ -180,43 +173,44 @@ uint8_t *getPixelBuffer() { return pixelBuffer; }
 void matrixDisplay() {
     // if (isLocked) return;
 
+    CLEAN_R32_PA_PD_DRV = R32_PA_PD_DRV & REGISTER_MASK_PA;
+    CLEAN_R32_PB_PD_DRV = R32_PB_PD_DRV & REGISTER_MASK_PB;
+    CLEAN_R32_PA_OUT = R32_PA_OUT & REGISTER_MASK_PA;
+    CLEAN_R32_PB_OUT = R32_PB_OUT & REGISTER_MASK_PB;
+    CLEAN_R32_PA_DIR = R32_PA_DIR & REGISTER_MASK_PA;
+    CLEAN_R32_PB_DIR = R32_PB_DIR & REGISTER_MASK_PB;
+
     // iterate for each column
     while (columnIndex < 22) {
-        // Load clean values
-        dirReg = cleanDirReg;
-        outReg = cleanOutReg;
-        drvReg = cleanDrvReg;
+        byteIndex = columnIndex + 1;
 
-        pinBuffer = REGISTER_MAP[columnIndex + 1];
-        dirReg |= pinBuffer;
-        outReg |= pinBuffer;
-        if (isBright) drvReg |= pinBuffer;
+        pinBuffer = REGISTER_MAP[byteIndex];
+        dirReg = pinBuffer;
+        outReg = pinBuffer;
 
         pinIndex = 0;
         pixelIndex = 0;
         while (pixelIndex < 22) {
             // skip if pin is the column anode pin
-            if (columnIndex + 1 == pinIndex) pinIndex++;
+            if (byteIndex == pinIndex) pinIndex++;
 
             bitIndex = ((pixelIndex >> 1) * 44) +
                        ((columnIndex << 1) | (pixelIndex & 1));
             // checking bit in array self.pixels at self.bit_idx
             if (pixelBuffer[bitIndex >> 3] & (1 << (bitIndex & 7))) {
-                pinBuffer = REGISTER_MAP[pinIndex];
-                dirReg |= pinBuffer;  // set as output
-                if (isBright) drvReg |= pinBuffer;
+                dirReg |= REGISTER_MAP[pinIndex];  // set as output
                 // implying that self.reg_out at the place is 0
             }
             pinIndex++;
             pixelIndex++;
         }
 
-        R32_PA_PD_DRV = drvReg >> 32;
-        R32_PB_PD_DRV = drvReg & 0xffffffff;
-        R32_PA_OUT = outReg >> 32;
-        R32_PB_OUT = outReg & 0xffffffff;
-        R32_PA_DIR = dirReg >> 32;
-        R32_PB_DIR = dirReg & 0xffffffff;
+        R32_PA_PD_DRV = CLEAN_R32_PA_PD_DRV | (dirReg >> 32);
+        R32_PB_PD_DRV = CLEAN_R32_PB_PD_DRV | dirReg;
+        R32_PA_OUT = CLEAN_R32_PA_OUT | (outReg >> 32);
+        R32_PB_OUT = CLEAN_R32_PB_OUT | outReg;
+        R32_PA_DIR = CLEAN_R32_PA_DIR | (dirReg >> 32);
+        R32_PB_DIR = CLEAN_R32_PB_DIR | dirReg;
 
         columnIndex++;
     }
