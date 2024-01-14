@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.jsx": "javascript",
+        "hal.h": "c",
+        "ch58x_common.h": "c"
+    }
+}

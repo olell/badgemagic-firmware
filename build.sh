@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ -d "build/" ]; then
     echo "Found build/, start building."
     cd build

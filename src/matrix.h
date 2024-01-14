@@ -43,47 +43,13 @@
  *
  */
 
-#include "CH58x_common.h"
-#include "HAL.h"
-#include "matrix.h"
+#pragma once
 
-/**
- * Initialises UART 1
- */
-void DebugInit(void) {
-    GPIOA_SetBits(GPIO_Pin_9);
-    GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
-    GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
-    UART1_DefInit();
-}
+#include <stdint.h>
 
-const uint8_t testPixels[61] = {
-    0,   0,  0,   0,   0,   224, 103, 224, 103, 0,   2,   126, 6,
-    126, 6,  64,  96,  102, 96,  96,  224, 8,   102, 6,   6,   6,
-    128, 96, 102, 224, 97,  0,   8,   102, 6,   30,  6,   142, 96,
-    102, 96, 96,  0,   4,   126, 126, 126, 126, 32,  224, 231, 231,
-    231, 7,  0,   0,   0,   0,   0,   0,   0,
-};
+void matrixInit();
+void matrixDisplay();
 
-/**
- * Main function, is executed after reset
- */
-int main() {
-    SetSysClock(CLK_SOURCE_PLL_60MHz);
-    DebugInit();
-    HAL_Init();
-
-    PRINT("Hello, world!\n");
-
-    matrixInit();
-
-    setBrightness(1);
-
-    memcpy(getPixelBuffer(), testPixels, 61);
-
-    while (1) {
-        matrixDisplay();
-    }
-
-    return 0;
-}
+void setPixel(uint8_t x, uint8_t y, uint8_t v);
+void setBrightness(uint8_t v);
+uint8_t* getPixelBuffer();
