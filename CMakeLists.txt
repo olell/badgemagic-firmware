@@ -3,7 +3,7 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 cmake_minimum_required(VERSION 3.20)
 
-set(TOOLPATH riscv-none-elf-)
+set(TOOLPATH riscv-none-embed-)
 
 if(WIN32)
   message(STATUS "Now is windows!")
@@ -35,8 +35,11 @@ project(${TOP_PROJECT_NAME} C CXX ASM)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 99)
 
-add_compile_options(-march=rv32imac_zicsr -mabi=ilp32
-                    -mcmodel=medany -msmall-data-limit=8 -mno-save-restore)
+# add_compile_options(-march=rv32imac_zicsr -mabi=ilp32
+#                    -mcmodel=medany -msmall-data-limit=8 -mno-save-restore)
+
+add_compile_options(-march=rv32imac -mabi=ilp32 -mcmodel=medany
+                      -msmall-data-limit=8 -mno-save-restore)
 
 add_compile_options(-fmessage-length=0 -fsigned-char -ffunction-sections
                     -fdata-sections -fno-common)
@@ -50,9 +53,9 @@ if(CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   set(CMAKE_ASM_FLAGS_DEBUG "-DDEBUG -O1 -g")
   message("Debug mode:${CMAKE_C_FLAGS_DEBUG}")
 elseif(CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall -O1")
-  set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O1") # -flto
-  set(CMAKE_ASM_FLAGS_RELEASE "-DNDEBUG -O1")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall -O2")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O2") # -flto
+  set(CMAKE_ASM_FLAGS_RELEASE "-O2")
   message("Release mode:${CMAKE_C_FLAGS_RELEASE}")
 else()
   message("else:${CMAKE_BUILD_TYPE}")
@@ -69,7 +72,7 @@ include_directories(
   src/inc
 )
 
-#add_definitions(-DDEBUG=1)
+add_definitions(-DDEBUG=1)
 
 file(
   GLOB_RECURSE

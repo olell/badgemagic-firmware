@@ -68,9 +68,9 @@ First of all install ninja and cmake
 brew install cmake ninja
 ```
 
-Then install the riscv-none-elf-gcc-xpack. Download and extract the newest release for your platform from this link: https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases
+Then install the xpack-riscv-none-embed-gcc. Download and extract the newest release for your platform from this link: https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/tag/v8.3.0-2.3/
 
-Then add the `bin/` folder to your $PATH variable
+Then add the `bin/` folder to your $PATH variable.
 
 ```
 # fish shell
