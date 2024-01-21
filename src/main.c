@@ -42,48 +42,68 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-
 #include "CH58x_common.h"
 #include "HAL.h"
 #include "matrix.h"
 
+static volatile uint32_t millisCounter = 0;
+static volatile uint64_t millis = 0;
+
+static void delay_ms(uint64_t ms) {
+    uint64_t dest = millis + ms;
+    while (millis > dest)  // if dest overflowed
+        ;
+    while (millis < dest)
+        ;
+}
+
 /**
  * Initialises UART 1
  */
-void DebugInit(void) {
+void SerialInit() {
     GPIOA_SetBits(GPIO_Pin_9);
     GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
     GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
     UART1_DefInit();
 }
 
-const uint8_t testPixels[61] = {
-    0,   0,  0,   0,   0,   224, 103, 224, 103, 0,   2,   126, 6,
-    126, 6,  64,  96,  102, 96,  96,  224, 8,   102, 6,   6,   6,
-    128, 96, 102, 224, 97,  0,   8,   102, 6,   30,  6,   142, 96,
-    102, 96, 96,  0,   4,   126, 126, 126, 126, 32,  224, 231, 231,
-    231, 7,  0,   0,   0,   0,   0,   0,   0,
-};
-
 /**
  * Main function, is executed after reset
  */
 int main() {
     SetSysClock(CLK_SOURCE_PLL_60MHz);
-    DebugInit();
+    SerialInit();
+
     HAL_Init();
 
     PRINT("Hello, world!\n");
 
     matrixInit();
-
-    setBrightness(1);
-
-    memcpy(getPixelBuffer(), testPixels, 61);
+    TMR0_TimerInit(FREQ_SYS / 11000);
+    TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
+    PFIC_EnableIRQ(TMR0_IRQn);
+    uint8_t* pixels = getPixelBuffer();
+    uint16_t index = 0;
 
     while (1) {
-        matrixDisplay();
+        pixels[index >> 3] ^= (uint8_t)(1 << (index & 7));
+        index = (index + 1) % 484;
+        delay_ms(10);
     }
 
     return 0;
+}
+
+__INTERRUPT
+__HIGH_CODE
+void TMR0_IRQHandler(void) {
+    if (TMR0_GetITFlag(TMR0_3_IT_CYC_END)) {
+        TMR0_ClearITFlag(TMR0_3_IT_CYC_END);
+        millisCounter++;            // 11000 times per second
+        if (millisCounter == 11) {  // 1000 times per second
+            millis++;
+            millisCounter = 0;
+        }
+        matrixDisplay();
+    }
 }

@@ -51,5 +51,7 @@ void matrixInit();
 void matrixDisplay();
 
 void setPixel(uint8_t x, uint8_t y, uint8_t v);
-void setBrightness(uint8_t v);
 uint8_t* getPixelBuffer();
+
+void matrixLock();
+void matrixUnlock();
